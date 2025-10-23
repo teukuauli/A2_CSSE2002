@@ -15,9 +15,9 @@ public class BeeHiveSpawner implements Spawner {
     /**
      * Timer for spawning cooldown.
      */
-    public RepeatingTimer timer;
-    private int xPos = 0;
-    private int yPos = 0;
+    private RepeatingTimer timer;
+    private int x = 0;
+    private int y = 0;
 
     /**
      * Constructs a new BeeHiveSpawner.
@@ -27,8 +27,8 @@ public class BeeHiveSpawner implements Spawner {
      * @param duration The spawn duration.
      */
     public BeeHiveSpawner(int x, int y, int duration) {
-        this.xPos = x;
-        this.yPos = y;
+        this.x = x;
+        this.y = y;
         this.timer = new RepeatingTimer(300);
     }
 
@@ -40,8 +40,8 @@ public class BeeHiveSpawner implements Spawner {
     @Override
     public void tick(EngineState state, GameState game) {
         timer.tick();
-        final boolean canAfford =
-                game.getInventory().getFood() >= 3 && game.getInventory().getCoins() >= 3;
+        final boolean canAfford = game.getInventory().getFood() >= 3
+                && game.getInventory().getCoins() >= 3;
 
         if (canAfford && state.getKeys().isDown('h')) {
             game.getInventory().addFood(-3);
@@ -53,21 +53,21 @@ public class BeeHiveSpawner implements Spawner {
 
     @Override
     public int getX() {
-        return this.xPos;
+        return this.x;
     }
 
     @Override
     public void setX(int x) {
-        this.xPos = x;
+        this.x = x;
     }
 
     @Override
     public int getY() {
-        return this.yPos;
+        return this.y;
     }
 
     @Override
     public void setY(int y) {
-        this.yPos = y;
+        this.y = y;
     }
 }

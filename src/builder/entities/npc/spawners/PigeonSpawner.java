@@ -16,11 +16,11 @@ import java.util.List;
  */
 public class PigeonSpawner implements Spawner {
 
-    private static final int DEFAULT_SPAWN_INTERVAL = 100;
+    private static final int DEFAULT_SPAWN_INTERVAL = 300;
 
-    private int xPos;
-    private int yPos;
-    private final RepeatingTimer timer;
+    private int x;
+    private int y;
+    private final TickTimer timer;
 
     /**
      * Constructs a new PigeonSpawner with default spawn interval.
@@ -40,8 +40,8 @@ public class PigeonSpawner implements Spawner {
      * @param duration The spawn interval duration.
      */
     public PigeonSpawner(int x, int y, int duration) {
-        this.xPos = x;
-        this.yPos = y;
+        this.x = x;
+        this.y = y;
         this.timer = new RepeatingTimer(duration);
     }
 
@@ -100,21 +100,21 @@ public class PigeonSpawner implements Spawner {
 
     @Override
     public int getX() {
-        return xPos;
+        return x;
     }
 
     @Override
     public void setX(int x) {
-        this.xPos = x;
+        this.x = x;
     }
 
     @Override
     public int getY() {
-        return yPos;
+        return y;
     }
 
     @Override
     public void setY(int y) {
-        this.yPos = y;
+        this.y = y;
     }
 }
