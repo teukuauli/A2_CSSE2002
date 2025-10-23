@@ -1,15 +1,10 @@
 package builder.entities.npc.spawners;
 
 import builder.GameState;
-import builder.entities.resources.Cabbage;
-import builder.entities.tiles.Tile;
 
 import engine.EngineState;
-import engine.game.HasPosition;
 import engine.timing.RepeatingTimer;
 import engine.timing.TickTimer;
-
-import java.util.List;
 
 /**
  * Spawner for pigeon enemies.
@@ -63,39 +58,8 @@ public class PigeonSpawner implements Spawner {
         game.getEnemies().setSpawnX(getX());
         game.getEnemies().setSpawnY(getY());
         
-        List<Tile> cabbageTiles = findCabbageTiles(game);
-        
-        if (!cabbageTiles.isEmpty()) {
-            Tile closestCabbage = findClosestCabbage(cabbageTiles);
-            game.getEnemies().getBirds().add(game.getEnemies().mkP(closestCabbage));
-        }
-    }
-
-    private List<Tile> findCabbageTiles(GameState game) {
-        return game.getWorld().tileSelector(tile ->
-                tile.getStackedEntities().stream()
-                        .anyMatch(entity -> entity instanceof Cabbage)
-        );
-    }
-
-    private Tile findClosestCabbage(List<Tile> cabbageTiles) {
-        Tile closest = cabbageTiles.get(0);
-        int minDistance = distanceFrom(closest);
-
-        for (Tile tile : cabbageTiles) {
-            int distance = distanceFrom(tile);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closest = tile;
-            }
-        }
-        return closest;
-    }
-
-    private int distanceFrom(HasPosition position) {
-        int deltaX = position.getX() - getX();
-        int deltaY = position.getY() - getY();
-        return (int) Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        // Always spawn pigeon targeting player initially
+        game.getEnemies().mkP(game.getPlayer());
     }
 
     @Override
