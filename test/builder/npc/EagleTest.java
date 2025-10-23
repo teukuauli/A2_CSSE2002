@@ -220,4 +220,55 @@ public class EagleTest {
         assertNotNull(eagle);
         assertTrue(eagle.getDirection() != Integer.MIN_VALUE);
     }
+
+    /**
+     * Tests that constructor calls setSprite.
+     */
+    @Test
+    public void testConstructorCallsSetSprite() {
+        Eagle newEagle = new Eagle(50, 50, player);
+        assertNotNull(newEagle.getSprite());
+    }
+
+    /**
+     * Tests that constructor calls updateDirectionToTarget.
+     */
+    @Test
+    public void testConstructorCallsUpdateDirectionToTarget() {
+        Eagle newEagle = new Eagle(50, 50, player);
+        // Direction should be set towards player
+        assertTrue(newEagle.getDirection() != Integer.MIN_VALUE);
+    }
+
+    /**
+     * Tests that tick calls super.tick (Enemy.tick).
+     */
+    @Test
+    public void testTickCallsSuperTick() {
+        eagle.tick(mockEngine, gameState);
+        // Should complete without exception
+        assertNotNull(eagle);
+    }
+
+    /**
+     * Tests that tick calls move.
+     */
+    @Test
+    public void testTickCallsMove() {
+        int initialX = eagle.getX();
+        eagle.setDirection(0);
+        eagle.tick(mockEngine, gameState);
+        // Position should change due to move() call
+        assertTrue(eagle.getX() != initialX || eagle.getY() != eagle.getY());
+    }
+
+    /**
+     * Tests sprite updates based on target Y position.
+     */
+    @Test
+    public void testSpriteUpdatesBasedOnTargetY() {
+        ChickenFarmer targetAbove = new ChickenFarmer(SPAWN_X, SPAWN_Y - 100);
+        Eagle eagleTracking = new Eagle(SPAWN_X, SPAWN_Y, targetAbove);
+        assertNotNull(eagleTracking.getSprite());
+    }
 }

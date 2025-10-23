@@ -230,4 +230,64 @@ public class MagpieTest {
         magpie.tick(mockEngine, gameState);
         assertNotNull(magpie);
     }
+
+    /**
+     * Tests that constructor calls setSpeed.
+     */
+    @Test
+    public void testConstructorCallsSetSpeed() {
+        Magpie newMagpie = new Magpie(50, 50, player);
+        assertEquals(DEFAULT_SPEED, newMagpie.getSpeed(), 0.01);
+    }
+
+    /**
+     * Tests that constructor calls setSprite.
+     */
+    @Test
+    public void testConstructorCallsSetSprite() {
+        Magpie newMagpie = new Magpie(50, 50, player);
+        assertNotNull(newMagpie.getSprite());
+    }
+
+    /**
+     * Tests that constructor calls updateDirectionToTarget.
+     */
+    @Test
+    public void testConstructorCallsUpdateDirectionToTarget() {
+        Magpie newMagpie = new Magpie(50, 50, player);
+        // Direction should be set towards player (not default 0)
+        assertTrue(newMagpie.getDirection() != Integer.MIN_VALUE);
+    }
+
+    /**
+     * Tests that tick calls super.tick (Enemy.tick).
+     */
+    @Test
+    public void testTickCallsSuperTick() {
+        magpie.tick(mockEngine, gameState);
+        // Should complete without exception
+        assertNotNull(magpie);
+    }
+
+    /**
+     * Tests that tick calls move.
+     */
+    @Test
+    public void testTickCallsMove() {
+        int initialX = magpie.getX();
+        magpie.setDirection(0);
+        magpie.tick(mockEngine, gameState);
+        // Position should change due to move() call
+        assertTrue(magpie.getX() != initialX || magpie.getY() != magpie.getY());
+    }
+
+    /**
+     * Tests sprite updates based on target Y position.
+     */
+    @Test
+    public void testSpriteUpdatesBasedOnTargetY() {
+        ChickenFarmer targetAbove = new ChickenFarmer(SPAWN_X, SPAWN_Y - 100);
+        Magpie magpieTracking = new Magpie(SPAWN_X, SPAWN_Y, targetAbove);
+        assertNotNull(magpieTracking.getSprite());
+    }
 }

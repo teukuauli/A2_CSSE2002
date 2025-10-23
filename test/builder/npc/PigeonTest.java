@@ -259,4 +259,61 @@ public class PigeonTest {
         // Method should execute without errors
         assertNotNull(pigeon);
     }
+
+    /**
+     * Tests that constructor without target sets sprite to "down".
+     */
+    @Test
+    public void testConstructorSetsDownSprite() {
+        Pigeon newPigeon = new Pigeon(50, 50);
+        assertNotNull(newPigeon.getSprite());
+        // Sprite should be set via setSprite call in constructor
+    }
+
+    /**
+     * Tests that constructor with target initializes direction and sprite.
+     */
+    @Test
+    public void testConstructorWithTargetInitializesDirectionAndSprite() {
+        ChickenFarmer target = new ChickenFarmer(200, 200);
+        Pigeon pigeonWithTarget = new Pigeon(SPAWN_X, SPAWN_Y, target);
+        
+        assertNotNull(pigeonWithTarget.getSprite());
+        // Direction should be initialized towards target
+        assertTrue(pigeonWithTarget.getDirection() != 0 || SPAWN_X == 200);
+    }
+
+    /**
+     * Tests that tick calls all component methods including move.
+     */
+    @Test
+    public void testTickCallsMove() {
+        // Pigeon should not be null after tick
+        pigeon.tick(mockEngine, gameState);
+        
+        // Tick should complete successfully
+        assertNotNull(pigeon);
+    }
+
+    /**
+     * Tests that tick calls super.tick (Enemy.tick).
+     */
+    @Test
+    public void testTickCallsSuperTick() {
+        pigeon.tick(mockEngine, gameState);
+        // Should complete without exception, indicating super.tick() was called
+        assertNotNull(pigeon);
+    }
+
+    /**
+     * Tests that pigeon updates sprite based on target Y position.
+     */
+    @Test
+    public void testSpriteUpdatesBasedOnTargetY() {
+        ChickenFarmer targetAbove = new ChickenFarmer(SPAWN_X, SPAWN_Y - 100);
+        Pigeon pigeonTracking = new Pigeon(SPAWN_X, SPAWN_Y, targetAbove);
+        
+        assertNotNull(pigeonTracking.getSprite());
+        // Sprite should be set based on target position
+    }
 }

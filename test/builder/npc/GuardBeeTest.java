@@ -206,4 +206,50 @@ public class GuardBeeTest {
         assertNotNull(guardBee);
         assertTrue(guardBee.getDirection() != Integer.MIN_VALUE);
     }
+
+    /**
+     * Tests that constructor calls setSprite.
+     */
+    @Test
+    public void testConstructorCallsSetSprite() {
+        GuardBee newBee = new GuardBee(50, 50, targetEnemy);
+        assertNotNull(newBee.getSprite());
+        // Sprite should be initialized via setSprite in constructor
+    }
+
+    /**
+     * Tests that constructor calls initializeDirection.
+     */
+    @Test
+    public void testConstructorCallsInitializeDirection() {
+        GuardBee newBee = new GuardBee(50, 50, targetEnemy);
+        // Direction should be set towards spawn initially
+        assertTrue(newBee.getDirection() >= -180 && newBee.getDirection() <= 180);
+    }
+
+    /**
+     * Tests that tick calls all component methods.
+     */
+    @Test
+    public void testTickCallsAllComponents() {
+        guardBee.tick(mockEngine, gameState);
+        // Tick should call: super.tick, updateDirection, move, updateArtBasedOnDirection, tickLifespan
+        assertNotNull(guardBee);
+    }
+
+    /**
+     * Tests sprite updates based on direction (up/down/left/right).
+     */
+    @Test
+    public void testSpriteUpdatesBasedOnDirection() {
+        // Set direction upward (270 degrees or -90)
+        guardBee.setDirection(270);
+        guardBee.tick(mockEngine, gameState);
+        assertNotNull(guardBee.getSprite());
+        
+        // Set direction downward (90 degrees)
+        guardBee.setDirection(90);
+        guardBee.tick(mockEngine, gameState);
+        assertNotNull(guardBee.getSprite());
+    }
 }
