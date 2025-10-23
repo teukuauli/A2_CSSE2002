@@ -16,8 +16,8 @@ public class BeeHiveSpawner implements Spawner {
      * Timer for spawning cooldown.
      */
     private RepeatingTimer timer;
-    private int x = 0;
-    private int y = 0;
+    private int xc = 0;
+    private int yc = 0;
 
     /**
      * Constructs a new BeeHiveSpawner.
@@ -27,8 +27,8 @@ public class BeeHiveSpawner implements Spawner {
      * @param duration The spawn duration.
      */
     public BeeHiveSpawner(int x, int y, int duration) {
-        this.x = x;
-        this.y = y;
+        this.xc = x;
+        this.yc = y;
         this.timer = new RepeatingTimer(300);
     }
 
@@ -46,28 +46,29 @@ public class BeeHiveSpawner implements Spawner {
         if (canAfford && state.getKeys().isDown('h')) {
             game.getInventory().addFood(-3);
             game.getInventory().addCoins(-3);
-            game.getNpcs().getNpcs().add(new BeeHive(game.getPlayer().getX(), game.getPlayer().getY()));
+            game.getNpcs().getNpcs().add(new BeeHive(game.getPlayer().getX(),
+                    game.getPlayer().getY()));
         }
         // look at use code example to spawn based on user input and only on grass tiles
     }
 
     @Override
     public int getX() {
-        return this.x;
+        return this.xc;
     }
 
     @Override
     public void setX(int x) {
-        this.x = x;
+        this.xc = x;
     }
 
     @Override
     public int getY() {
-        return this.y;
+        return this.yc;
     }
 
     @Override
     public void setY(int y) {
-        this.y = y;
+        this.yc = y;
     }
 }

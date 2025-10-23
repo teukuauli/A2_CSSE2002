@@ -13,8 +13,8 @@ public class EagleSpawner implements Spawner {
 
     private static final int DEFAULT_SPAWN_INTERVAL = 1000;
 
-    private int x;
-    private int y;
+    private int xc;
+    private int yc;
     private final TickTimer timer;
 
     /**
@@ -35,8 +35,8 @@ public class EagleSpawner implements Spawner {
      * @param duration The spawn interval duration.
      */
     public EagleSpawner(int x, int y, int duration) {
-        this.x = x;
-        this.y = y;
+        this.xc = x;
+        this.yc = y;
         this.timer = new RepeatingTimer(duration);
     }
 
@@ -62,21 +62,21 @@ public class EagleSpawner implements Spawner {
 
     @Override
     public int getX() {
-        return x;
+        return xc;
     }
 
     @Override
     public void setX(int x) {
-        this.x = x;
+        this.xc = x;
     }
 
     @Override
     public int getY() {
-        return y;
+        return yc;
     }
 
     @Override
     public void setY(int y) {
-        this.y = y;
+        this.yc = y;
     }
 }

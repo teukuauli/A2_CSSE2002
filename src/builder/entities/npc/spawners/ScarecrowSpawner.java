@@ -12,8 +12,8 @@ import engine.timing.TickTimer;
  */
 public class ScarecrowSpawner implements Spawner {
 
-    private int x = 0;
-    private int y = 0;
+    private int xc = 0;
+    private int yc = 0;
     private RepeatingTimer timer = new RepeatingTimer(300);
 
     /**
@@ -23,8 +23,8 @@ public class ScarecrowSpawner implements Spawner {
      * @param y The y-coordinate.
      */
     public ScarecrowSpawner(int x, int y) {
-        this.x = x;
-        this.y = y;
+        this.xc = x;
+        this.yc = y;
     }
 
     @Override
@@ -38,27 +38,28 @@ public class ScarecrowSpawner implements Spawner {
         // look at use code to spawn
         if (game.getInventory().getCoins() >= 2 && state.getKeys().isDown('c')) {
             game.getInventory().addCoins(-2);
-            game.getNpcs().addNpc(new Scarecrow(game.getPlayer().getX(), game.getPlayer().getY()));
+            game.getNpcs().addNpc(new Scarecrow(game.getPlayer().getX(),
+                    game.getPlayer().getY()));
         }
     }
 
     @Override
     public int getX() {
-        return this.x;
+        return this.xc;
     }
 
     @Override
     public void setX(int x) {
-        this.x = x;
+        this.xc = x;
     }
 
     @Override
     public int getY() {
-        return this.y;
+        return this.yc;
     }
 
     @Override
     public void setY(int y) {
-        this.y = y;
+        this.yc = y;
     }
 }
