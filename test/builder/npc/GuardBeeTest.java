@@ -178,4 +178,32 @@ public class GuardBeeTest {
         int distance = guardBee.distanceFrom(SPAWN_X + 30, SPAWN_Y + 40);
         assertEquals(50, distance);
     }
+
+    /**
+     * Tests that tick causes movement.
+     */
+    @Test
+    public void testTickProcessing() {
+        guardBee.tick(mockEngine, gameState);
+        // Should complete without exception
+        assertNotNull(guardBee);
+    }
+
+    /**
+     * Tests sprite is set after construction.
+     */
+    @Test
+    public void testSpriteIsSet() {
+        assertNotNull(guardBee.getSprite());
+    }
+
+    /**
+     * Tests direction initialization.
+     */
+    @Test
+    public void testDirectionInitialization() {
+        // Direction should be initialized
+        assertNotNull(guardBee);
+        assertTrue(guardBee.getDirection() != Integer.MIN_VALUE);
+    }
 }

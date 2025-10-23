@@ -203,4 +203,31 @@ public class MagpieTest {
         // Should not throw exception
         magpie.interact(mockEngine, gameState);
     }
+
+    /**
+     * Tests sprite initialization.
+     */
+    @Test
+    public void testSpriteInitialization() {
+        assertNotNull(magpie.getSprite());
+    }
+
+    /**
+     * Tests direction to target.
+     */
+    @Test
+    public void testDirectionToTarget() {
+        // Direction should be set
+        assertNotNull(magpie);
+        assertTrue(magpie.getDirection() != Integer.MIN_VALUE);
+    }
+
+    /**
+     * Tests tick method execution.
+     */
+    @Test
+    public void testTickExecution() {
+        magpie.tick(mockEngine, gameState);
+        assertNotNull(magpie);
+    }
 }

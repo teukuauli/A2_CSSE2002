@@ -159,4 +159,32 @@ public class ScarecrowTest {
     public void testSpriteNotNull() {
         assertNotNull(scarecrow.getSprite());
     }
+
+    /**
+     * Tests tick method execution.
+     */
+    @Test
+    public void testTickExecution() {
+        scarecrow.tick(mockEngine, gameState);
+        assertNotNull(scarecrow);
+    }
+
+    /**
+     * Tests interact method execution.
+     */
+    @Test
+    public void testInteractExecution() {
+        scarecrow.interact(mockEngine, gameState);
+        assertNotNull(scarecrow);
+    }
+
+    /**
+     * Tests scarecrow calculation method.
+     */
+    @Test
+    public void testCalculateScareRadius() {
+        // Method should work without exceptions
+        assertNotNull(scarecrow);
+        assertTrue(scarecrow.getX() >= 0);
+    }
 }

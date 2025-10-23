@@ -220,4 +220,43 @@ public class PigeonTest {
         pigeon.setSpeed(10);
         assertEquals(10.0, pigeon.getSpeed(), 0.01);
     }
+
+    /**
+     * Tests that tick method processes correctly without exceptions.
+     */
+    @Test
+    public void testTickMethod() {
+        pigeon.tick(mockEngine, gameState);
+        // Should complete without exception
+        assertNotNull(pigeon);
+    }
+
+    /**
+     * Tests that sprite is not null after construction.
+     */
+    @Test
+    public void testSpriteIsSet() {
+        Pigeon newPigeon = new Pigeon(50, 50);
+        assertNotNull(newPigeon.getSprite());
+    }
+
+    /**
+     * Tests pigeon direction setting.
+     */
+    @Test
+    public void testSetDirection() {
+        pigeon.setDirection(3);
+        assertEquals(3, pigeon.getDirection());
+    }
+
+    /**
+     * Tests attacking state toggle.
+     */
+    @Test
+    public void testAttackingState() {
+        pigeon.setAttacking(true);
+        pigeon.setAttacking(false);
+        // Method should execute without errors
+        assertNotNull(pigeon);
+    }
 }

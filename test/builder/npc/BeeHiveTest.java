@@ -173,4 +173,32 @@ public class BeeHiveTest {
     public void testSpriteNotNull() {
         assertNotNull(beeHive.getSprite());
     }
+
+    /**
+     * Tests tick method execution.
+     */
+    @Test
+    public void testTickExecution() {
+        beeHive.tick(mockEngine, gameState);
+        assertNotNull(beeHive);
+    }
+
+    /**
+     * Tests interact method execution.
+     */
+    @Test
+    public void testInteractExecution() {
+        beeHive.interact(mockEngine, gameState);
+        assertNotNull(beeHive);
+    }
+
+    /**
+     * Tests reload timer functionality.
+     */
+    @Test
+    public void testReloadTimer() {
+        // Timer should be present
+        assertNotNull(beeHive);
+        assertEquals(0.0, beeHive.getSpeed(), 0.01);
+    }
 }

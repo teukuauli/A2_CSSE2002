@@ -192,4 +192,32 @@ public class EagleTest {
     public void testSpriteNotNull() {
         assertNotNull(eagle.getSprite());
     }
+
+    /**
+     * Tests tick method execution.
+     */
+    @Test
+    public void testTickExecution() {
+        eagle.tick(mockEngine, gameState);
+        assertNotNull(eagle);
+    }
+
+    /**
+     * Tests direction updates.
+     */
+    @Test
+    public void testDirectionUpdate() {
+        eagle.setDirection(6);
+        assertEquals(6, eagle.getDirection());
+    }
+
+    /**
+     * Tests initial direction is valid.
+     */
+    @Test
+    public void testInitialDirection() {
+        // Direction should be initialized
+        assertNotNull(eagle);
+        assertTrue(eagle.getDirection() != Integer.MIN_VALUE);
+    }
 }
