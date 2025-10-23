@@ -1,6 +1,13 @@
-I use an ai to check my javadocs is correct, and make an additional javadocs if miss something.
-1.ChatGPT 5
-    prompt: can you make a perfec javadocs for me and give me the template
+I declare that I have used generative AI tools in completing this assignment.
+
+Specifically, I used AI to:
+1. Check my javadocs is correct, and make additional javadocs if missing something
+2. Get help with Checkstyle errors and code formatting issues
+
+Details of AI usage:
+
+1. ChatGPT 5
+    prompt: can you make a perfect javadocs for me and give me the template
     result:
     Absolutely—here’s a clean, copy-pasteable JavaDoc starter kit plus quick rules so your docs look “HD-ready” for marking and teammates.
     Quick rules for “perfect” JavaDocs
