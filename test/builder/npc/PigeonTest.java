@@ -6,6 +6,7 @@ import builder.entities.npc.enemies.EnemyManager;
 import builder.entities.npc.enemies.Pigeon;
 import builder.inventory.TinyInventory;
 import builder.player.ChickenFarmer;
+import builder.ui.SpriteGallery;
 import builder.world.BeanWorld;
 import engine.timing.FixedTimer;
 import org.junit.Before;
@@ -34,13 +35,13 @@ public class PigeonTest {
     public void setUp() {
         pigeon = new Pigeon(SPAWN_X, SPAWN_Y);
         mockEngine = new MockEngineState();
-        
+
         BeanWorld world = builder.world.WorldBuilder.empty();
         ChickenFarmer player = new ChickenFarmer(200, 200);
         TinyInventory inventory = new TinyInventory(5, 10, 10);
         NpcManager npcs = new NpcManager();
         EnemyManager enemies = new EnemyManager(mockEngine.getDimensions());
-        
+
         gameState = new JavaBeanGameState(world, player, inventory, npcs, enemies);
     }
 
@@ -61,7 +62,7 @@ public class PigeonTest {
     @Test
     public void testConstructorWithTarget() {
         ChickenFarmer target = new ChickenFarmer(200, 200);
-        
+
         Pigeon pigeonWithTarget = new Pigeon(SPAWN_X, SPAWN_Y, target);
         assertEquals(SPAWN_X, pigeonWithTarget.getX());
         assertEquals(SPAWN_Y, pigeonWithTarget.getY());
@@ -121,7 +122,7 @@ public class PigeonTest {
     @Test
     public void testDistanceFromPosition() {
         ChickenFarmer target = new ChickenFarmer(SPAWN_X + 30, SPAWN_Y + 40);
-        
+
         int distance = pigeon.distanceFrom(target);
         // Distance should be 50 (3-4-5 triangle)
         assertEquals(50, distance);
@@ -144,11 +145,11 @@ public class PigeonTest {
         // Set direction explicitly to ensure movement
         pigeon.setDirection(0);
         pigeon.setSpeed(4);
-        
+
         int initialX = pigeon.getX();
-        
+
         pigeon.move(); // Test the move method directly
-        
+
         // Pigeon should have moved
         assertTrue(pigeon.getX() != initialX);
     }
@@ -205,10 +206,10 @@ public class PigeonTest {
     public void testMoveMethod() {
         pigeon.setDirection(0); // Move right
         pigeon.setSpeed(4);
-        
+
         int initialX = pigeon.getX();
         pigeon.move();
-        
+
         assertTrue(pigeon.getX() > initialX);
     }
 
@@ -277,7 +278,7 @@ public class PigeonTest {
     public void testConstructorWithTargetInitializesDirectionAndSprite() {
         ChickenFarmer target = new ChickenFarmer(200, 200);
         Pigeon pigeonWithTarget = new Pigeon(SPAWN_X, SPAWN_Y, target);
-        
+
         assertNotNull(pigeonWithTarget.getSprite());
         // Direction should be initialized towards target
         assertTrue(pigeonWithTarget.getDirection() != 0 || SPAWN_X == 200);
@@ -290,7 +291,7 @@ public class PigeonTest {
     public void testTickCallsMove() {
         // Pigeon should not be null after tick
         pigeon.tick(mockEngine, gameState);
-        
+
         // Tick should complete successfully
         assertNotNull(pigeon);
     }
@@ -312,8 +313,162 @@ public class PigeonTest {
     public void testSpriteUpdatesBasedOnTargetY() {
         ChickenFarmer targetAbove = new ChickenFarmer(SPAWN_X, SPAWN_Y - 100);
         Pigeon pigeonTracking = new Pigeon(SPAWN_X, SPAWN_Y, targetAbove);
-        
+
         assertNotNull(pigeonTracking.getSprite());
         // Sprite should be set based on target position
+    }
+
+
+    @Test
+    public void testPigeonConstructorSetsCorrectSprite() {
+        Pigeon pigeon = new Pigeon(100, 200);
+
+        assertNotNull(pigeon.getSprite());
+        assertEquals(SpriteGallery.pigeon.getSprite("down"), pigeon.getSprite());
+    }
+
+    /**
+     * Tests that basic constructor sets sprite to "down".
+     * This test catches mutation: removed call to setSprite in basic constructor.
+     */
+    @Test
+    public void testBasicConstructorSetsDownSprite() {
+        Pigeon pigeon = new Pigeon(50, 50);
+        
+        // Verify sprite is set (not null)
+        assertNotNull("Sprite should be set in constructor", pigeon.getSprite());
+        
+        // Verify it's specifically the "down" sprite
+        assertEquals("Constructor should set sprite to 'down'", 
+                     SpriteGallery.pigeon.getSprite("down"), 
+                     pigeon.getSprite());
+    }
+
+    /**
+     * Tests that sprite is set immediately after construction without any tick.
+     * Catches mutation where setSprite is removed from constructor.
+     */
+    @Test
+    public void testSpriteSetImmediatelyAfterConstruction() {
+        Pigeon newPigeon = new Pigeon(SPAWN_X, SPAWN_Y);
+        
+        // Before any tick or other method call, sprite should already be set
+        assertNotNull("Sprite must be set in constructor, before any tick", 
+                      newPigeon.getSprite());
+        
+        // Should specifically be the down sprite
+        assertEquals("Basic constructor must set down sprite", 
+                     SpriteGallery.pigeon.getSprite("down"),
+                     newPigeon.getSprite());
+    }
+
+    /**
+     * Tests line 66: if (trackedTarget != null) in initializeDirectionAndSprite
+     * Mutation: replaced equality check with true
+     * This would cause NPE when trying to access null trackedTarget
+     */
+    @Test
+    public void testConstructorWithNullTargetDoesNotCrash() {
+        // Create pigeon without target (trackedTarget will be null)
+        Pigeon pigeon = new Pigeon(100, 100);
+        
+        // Should not throw NPE during construction
+        // If mutation changes "trackedTarget != null" to "true",
+        // it will try to call updateDirectionToTarget() with null target
+        assertNotNull("Constructor should complete without NPE", pigeon);
+        assertNotNull("Sprite should be set to down", pigeon.getSprite());
+        assertEquals("Should set down sprite when no target",
+                     SpriteGallery.pigeon.getSprite("down"),
+                     pigeon.getSprite());
+    }
+
+    /**
+     * Tests that constructor with null target sets down sprite correctly.
+     * Verifies the else branch in initializeDirectionAndSprite (line 70)
+     */
+    @Test
+    public void testBasicConstructorSetsDownSpriteWithoutTarget() {
+        Pigeon pigeon = new Pigeon(SPAWN_X, SPAWN_Y);
+        
+        // Should have down sprite (from else branch)
+        assertNotNull(pigeon.getSprite());
+        assertEquals("Basic constructor should use else branch and set down sprite",
+                     SpriteGallery.pigeon.getSprite("down"),
+                     pigeon.getSprite());
+    }
+
+    /**
+     * Tests that constructor with target initializes direction and sprite.
+     * Verifies the if branch in initializeDirectionAndSprite (line 66-68)
+     */
+    @Test
+    public void testConstructorWithTargetInitializesCorrectly() {
+        ChickenFarmer target = new ChickenFarmer(SPAWN_X + 100, SPAWN_Y + 100);
+        Pigeon pigeon = new Pigeon(SPAWN_X, SPAWN_Y, target);
+        
+        // Should have sprite set (from if branch)
+        assertNotNull("Sprite should be set when target provided", pigeon.getSprite());
+        
+        // Direction should be set toward target
+        assertTrue("Direction should be initialized",
+                   pigeon.getDirection() >= -180 && pigeon.getDirection() <= 360);
+    }
+
+    /**
+     * Tests line 68: updateSpriteBasedOnTarget() call in constructor
+     * Mutation: removed call to updateSpriteBasedOnTarget
+     * Sprite should be set based on target's Y position
+     */
+    @Test
+    public void testConstructorWithTargetSetsSpriteBasedOnTargetY() {
+        // Target below pigeon - should set "down" sprite
+        ChickenFarmer targetBelow = new ChickenFarmer(SPAWN_X, SPAWN_Y + 100);
+        Pigeon pigeonWithTargetBelow = new Pigeon(SPAWN_X, SPAWN_Y, targetBelow);
+        
+        assertNotNull("Sprite should be set", pigeonWithTargetBelow.getSprite());
+        assertEquals("Should set down sprite when target is below",
+                     SpriteGallery.pigeon.getSprite("down"),
+                     pigeonWithTargetBelow.getSprite());
+        
+        // Target above pigeon - should set "up" sprite
+        ChickenFarmer targetAbove = new ChickenFarmer(SPAWN_X, SPAWN_Y - 100);
+        Pigeon pigeonWithTargetAbove = new Pigeon(SPAWN_X, SPAWN_Y, targetAbove);
+        
+        assertNotNull("Sprite should be set", pigeonWithTargetAbove.getSprite());
+        assertEquals("Should set up sprite when target is above",
+                     SpriteGallery.pigeon.getSprite("up"),
+                     pigeonWithTargetAbove.getSprite());
+    }
+
+    /**
+     * Tests line 70: setSprite() call in constructor (no target case)
+     * Mutation: removed call to setSprite
+     * If setSprite is not called, sprite will be null
+     */
+    @Test
+    public void testBasicConstructorCallsSetSprite() {
+        Pigeon pigeon = new Pigeon(SPAWN_X, SPAWN_Y);
+        
+        // Sprite must not be null - proves setSprite was called
+        assertNotNull("setSprite must be called in basic constructor", 
+                      pigeon.getSprite());
+        
+        // Must be the down sprite specifically
+        assertEquals("Basic constructor must call setSprite with down sprite",
+                     SpriteGallery.pigeon.getSprite("down"),
+                     pigeon.getSprite());
+    }
+
+    /**
+     * Tests that sprite is null if setSprite is not called.
+     * This verifies the importance of line 70.
+     */
+    @Test
+    public void testSpriteNotNullAfterBasicConstruction() {
+        Pigeon pigeon = new Pigeon(100, 200);
+        
+        // If line 70 (setSprite call) is removed, sprite would be null
+        assertNotNull("Sprite should not be null after construction",
+                      pigeon.getSprite());
     }
 }
