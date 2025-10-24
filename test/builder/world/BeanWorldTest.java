@@ -258,17 +258,20 @@ public class BeanWorldTest {
     /**
      * Tests line 98: tick calls tile.tick
      * Mutation: removed call to Tile::tick
+     * Also verifies super.tick() is called (line 271)
      */
     @Test
     public void testTickCallsTileTick() {
         // Create a custom tile that tracks if tick was called
         final boolean[] tickCalled = {false};
+        final boolean[] superTickCalled = {false};
         
         Tile tile = new builder.entities.tiles.Grass(100, 100) {
             @Override
             public void tick(engine.EngineState state) {
                 tickCalled[0] = true;
-                super.tick(state);
+                super.tick(state); // Line 271 - must be called
+                superTickCalled[0] = true;
             }
         };
         
@@ -277,20 +280,24 @@ public class BeanWorldTest {
         world.tick(mockEngine, gameState);
         
         assertTrue("tick must call tile.tick() on all tiles", tickCalled[0]);
+        assertTrue("tile.tick() must call super.tick() (line 271)", superTickCalled[0]);
     }
 
     /**
      * Tests line 98: tick calls tick on all tiles
+     * Also verifies super.tick() is called (lines 293, 301)
      */
     @Test
     public void testTickCallsTickOnAllTiles() {
         final int[] tickCount = {0};
+        final int[] superTickCount = {0};
         
         Tile tile1 = new builder.entities.tiles.Grass(100, 100) {
             @Override
             public void tick(engine.EngineState state) {
                 tickCount[0]++;
-                super.tick(state);
+                super.tick(state); // Line 293 - must be called
+                superTickCount[0]++;
             }
         };
         
@@ -298,7 +305,8 @@ public class BeanWorldTest {
             @Override
             public void tick(engine.EngineState state) {
                 tickCount[0]++;
-                super.tick(state);
+                super.tick(state); // Line 301 - must be called
+                superTickCount[0]++;
             }
         };
         
@@ -308,6 +316,7 @@ public class BeanWorldTest {
         world.tick(mockEngine, gameState);
         
         assertEquals("tick must call tick on all tiles", 2, tickCount[0]);
+        assertEquals("All tiles must call super.tick() (lines 293, 301)", 2, superTickCount[0]);
     }
 
     /**

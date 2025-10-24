@@ -12,8 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 import scenarios.mocks.MockEngineState;
 
-import java.lang.reflect.Field;
-
 import static org.junit.Assert.*;
 
 /**
@@ -114,6 +112,7 @@ public class BeeHiveSpawnerTest {
      */
     @Test
     public void testTickCallsTimerTick() throws Exception {
+        // Use the default spawner (timer duration is always 300, constructor param ignored)
         MockEngineState mockEngine = new MockEngineState();
         BeanWorld world = builder.world.WorldBuilder.empty();
         ChickenFarmer player = new ChickenFarmer(200, 200);
@@ -122,16 +121,42 @@ public class BeeHiveSpawnerTest {
         EnemyManager enemies = new EnemyManager(mockEngine.getDimensions());
         JavaBeanGameState gameState = new JavaBeanGameState(world, player, inventory, npcs, enemies);
         
-        // Get initial timer state using reflection
-        Field timerField = BeeHiveSpawner.class.getDeclaredField("timer");
-        timerField.setAccessible(true);
-        engine.timing.RepeatingTimer timer = (engine.timing.RepeatingTimer) timerField.get(spawner);
+        // Timer should not be finished initially
+        assertFalse("Timer should not be finished before ticking", 
+                    spawner.getTimer().isFinished());
         
-        // Tick should call timer.tick()
+        // Tick once - timer should have ticked but not finished (duration is 300)
         spawner.tick(mockEngine, gameState);
+        assertFalse("Timer should have ticked but not finished after 1 tick", 
+                    spawner.getTimer().isFinished());
         
-        // Verify timer was ticked (it should not be null)
-        assertNotNull("tick must call timer.tick()", timer);
+        // Tick many times (300+ times) - if timer.tick() is called, timer should finish
+        for (int i = 0; i < 301; i++) {
+            spawner.tick(mockEngine, gameState);
+        }
+        
+        // Timer should have finished at some point (proving tick was called)
+        // Since it's a RepeatingTimer, it will reset, but we can verify it works
+        // by checking it's still not null and operational
+        assertNotNull("timer.tick must be called", spawner.getTimer());
+        
+        // Better verification: timer should have finished after exactly 300 ticks
+        // Create a new spawner and tick exactly enough
+        BeeHiveSpawner testSpawner = new BeeHiveSpawner(100, 100, 1);
+        assertFalse("Timer should not be finished initially",
+                    testSpawner.getTimer().isFinished());
+        
+        // Tick 299 times - should not be finished
+        for (int i = 0; i < 299; i++) {
+            testSpawner.tick(mockEngine, gameState);
+        }
+        assertFalse("Timer should not be finished after 299 ticks",
+                    testSpawner.getTimer().isFinished());
+        
+        // Tick one more time (300th tick) - should be finished
+        testSpawner.tick(mockEngine, gameState);
+        assertTrue("timer.tick must be called to advance timer to finished state", 
+                   testSpawner.getTimer().isFinished());
     }
 
     /**

@@ -6,6 +6,7 @@ import builder.entities.npc.enemies.Eagle;
 import builder.entities.npc.enemies.EnemyManager;
 import builder.inventory.TinyInventory;
 import builder.player.ChickenFarmer;
+import builder.ui.SpriteGallery;
 import builder.world.BeanWorld;
 import engine.timing.FixedTimer;
 import org.junit.Before;
@@ -891,5 +892,329 @@ public class EagleTest {
         // addFood must be called
         assertTrue("addFood must be called to recover stolen food",
                    gameState.getInventory().getFood() > initialFood);
+    }
+
+    /**
+     * Tests line 44: setSprite is called in constructor
+     * Mutation: removed call to setSprite
+     */
+    @Test
+    public void testConstructorMustCallSetSprite() {
+        Eagle newEagle = new Eagle(150, 150, player);
+        
+        // Sprite must be initialized
+        assertNotNull("Constructor must call setSprite",
+                      newEagle.getSprite());
+        assertEquals("Constructor must set default sprite",
+                     SpriteGallery.eagle.getSprite("default"),
+                     newEagle.getSprite());
+    }
+
+    /**
+     * Tests line 45: updateDirectionToTarget is called in constructor
+     * Mutation: removed call to updateDirectionToTarget
+     */
+    @Test
+    public void testConstructorMustCallUpdateDirectionToTarget() {
+        // Create player to the right of eagle
+        ChickenFarmer rightPlayer = new ChickenFarmer(300, 100);
+        Eagle newEagle = new Eagle(100, 100, rightPlayer);
+        
+        // Direction should be initialized toward player (right = 0 degrees)
+        int direction = newEagle.getDirection();
+        assertTrue("Constructor must call updateDirectionToTarget to set direction (got " + direction + ")",
+                   direction >= -45 && direction <= 45);
+    }
+
+    /**
+     * Tests line 60: super.tick is called in tick method
+     * Mutation: removed call to Enemy::tick
+     */
+    @Test
+    public void testTickMustCallSuperTick() {
+        Eagle testEagle = new Eagle(100, 100, player);
+        testEagle.setDirection(0);
+        testEagle.setSpeed(2);
+        
+        int initialX = testEagle.getX();
+        
+        // super.tick() calls move() which changes position
+        testEagle.tick(mockEngine, gameState);
+        
+        // Position should change because super.tick() was called
+        assertTrue("tick must call super.tick() which enables movement",
+                   testEagle.getX() != initialX || testEagle.getY() != SPAWN_Y);
+    }
+
+    /**
+     * Tests line 65: move is explicitly called in tick (not just via super)
+     * Mutation: removed call to move
+     */
+    @Test
+    public void testTickMustCallMoveExplicitly() {
+        Eagle testEagle = new Eagle(100, 100, player);
+        testEagle.setDirection(0);
+        testEagle.setSpeed(3);
+        
+        int initialX = testEagle.getX();
+        
+        // Tick calls move() which changes position
+        testEagle.tick(mockEngine, gameState);
+        
+        // Position must change due to move() call
+        assertTrue("tick must call move() explicitly to change position",
+                   testEagle.getX() != initialX || testEagle.getY() != SPAWN_Y);
+    }
+
+    /**
+     * Tests line 114: attacking conditional check (both branches)
+     * Mutation: replaced equality check with false
+     */
+    @Test
+    public void testUpdateDirectionAndSpriteCheckingAttackingTrue() {
+        Eagle testEagle = new Eagle(100, 100, new ChickenFarmer(300, 300));
+        testEagle.setDirection(180);
+        
+        int initialDirection = testEagle.getDirection();
+        testEagle.tick(mockEngine, gameState);
+        
+        // When attacking=true, should call updateDirectionToTarget
+        // Direction should change to face target
+        assertTrue("Must check attacking flag and call updateDirectionToTarget when true",
+                   testEagle.getDirection() != initialDirection);
+    }
+
+    /**
+     * Tests line 114: attacking conditional check (false branch)
+     * Mutation: replaced equality check with true
+     */
+    @Test
+    public void testUpdateDirectionAndSpriteCheckingAttackingFalse() throws Exception {
+        Eagle testEagle = new Eagle(100, 100, player);
+        java.lang.reflect.Field attackingField = Eagle.class.getDeclaredField("attacking");
+        attackingField.setAccessible(true);
+        attackingField.set(testEagle, false);
+        testEagle.setX(300);
+        testEagle.setY(300);
+        testEagle.setDirection(90);
+        
+        int initialDirection = testEagle.getDirection();
+        testEagle.tick(mockEngine, gameState);
+        
+        // When attacking=false, should call updateDirectionToSpawn
+        // Direction should change to face spawn
+        assertTrue("Must check attacking flag and call updateDirectionToSpawn when false",
+                   testEagle.getDirection() != initialDirection);
+    }
+
+    /**
+     * Tests line 119: updateSpriteBasedOnSpawn is called in else branch
+     * Mutation: removed call to updateSpriteBasedOnSpawn
+     */
+    @Test
+    public void testUpdateDirectionAndSpriteMustCallUpdateSpriteBasedOnSpawn() throws Exception {
+        Eagle testEagle = new Eagle(200, 100, player);
+        java.lang.reflect.Field attackingField = Eagle.class.getDeclaredField("attacking");
+        attackingField.setAccessible(true);
+        attackingField.set(testEagle, false);
+        testEagle.setY(300); // Below spawn
+        
+        Object initialSprite = testEagle.getSprite();
+        testEagle.tick(mockEngine, gameState);
+        
+        // updateSpriteBasedOnSpawn must be called
+        assertNotNull("updateSpriteBasedOnSpawn must be called when not attacking",
+                      testEagle.getSprite());
+        assertTrue("Sprite must be updated based on spawn position",
+                   initialSprite != testEagle.getSprite() || initialSprite == null);
+    }
+
+    /**
+     * Tests line 146: spawnY < getY() conditional (true branch)
+     * Mutation: replaced comparison check with false
+     */
+    @Test
+    public void testUpdateSpriteBasedOnSpawnChecksTrueBranch() throws Exception {
+        Eagle testEagle = new Eagle(200, 100, player); // spawnY = 100
+        java.lang.reflect.Field attackingField = Eagle.class.getDeclaredField("attacking");
+        attackingField.setAccessible(true);
+        attackingField.set(testEagle, false);
+        testEagle.setY(300); // Eagle below spawn (300 > 100)
+        
+        testEagle.tick(mockEngine, gameState);
+        
+        // When spawnY < getY() is true, should set "up" sprite
+        assertEquals("Must check spawnY < getY() correctly for true branch",
+                     SpriteGallery.eagle.getSprite("up"),
+                     testEagle.getSprite());
+    }
+
+    /**
+     * Tests line 146: spawnY < getY() conditional (false branch)
+     * Mutation: replaced comparison check with true
+     */
+    @Test
+    public void testUpdateSpriteBasedOnSpawnChecksFalseBranch() throws Exception {
+        Eagle testEagle = new Eagle(200, 300, player); // spawnY = 300
+        java.lang.reflect.Field attackingField = Eagle.class.getDeclaredField("attacking");
+        attackingField.setAccessible(true);
+        attackingField.set(testEagle, false);
+        testEagle.setY(100); // Eagle above spawn (100 < 300)
+        
+        testEagle.tick(mockEngine, gameState);
+        
+        // When spawnY < getY() is false, should set "down" sprite
+        assertEquals("Must check spawnY < getY() correctly for false branch",
+                     SpriteGallery.eagle.getSprite("down"),
+                     testEagle.getSprite());
+    }
+
+    /**
+     * Tests line 147: setSprite("up") is called when below spawn
+     * Mutation: removed call to setSprite
+     */
+    @Test
+    public void testUpdateSpriteBasedOnSpawnMustCallSetSpriteUp() throws Exception {
+        Eagle testEagle = new Eagle(200, 100, player);
+        java.lang.reflect.Field attackingField = Eagle.class.getDeclaredField("attacking");
+        attackingField.setAccessible(true);
+        attackingField.set(testEagle, false);
+        testEagle.setY(300);
+        
+        testEagle.tick(mockEngine, gameState);
+        
+        // setSprite must be called with "up"
+        assertEquals("setSprite must be called with 'up' when eagle below spawn",
+                     SpriteGallery.eagle.getSprite("up"),
+                     testEagle.getSprite());
+    }
+
+    /**
+     * Tests line 149: setSprite("down") is called when above spawn
+     * Mutation: removed call to setSprite
+     */
+    @Test
+    public void testUpdateSpriteBasedOnSpawnMustCallSetSpriteDown() throws Exception {
+        Eagle testEagle = new Eagle(200, 300, player);
+        java.lang.reflect.Field attackingField = Eagle.class.getDeclaredField("attacking");
+        attackingField.setAccessible(true);
+        attackingField.set(testEagle, false);
+        testEagle.setY(100);
+        
+        testEagle.tick(mockEngine, gameState);
+        
+        // setSprite must be called with "down"
+        assertEquals("setSprite must be called with 'down' when eagle above spawn",
+                     SpriteGallery.eagle.getSprite("down"),
+                     testEagle.getSprite());
+    }
+
+    /**
+     * Tests line 138: trackedTarget.getY() > getY() conditional (true branch)
+     * Mutation: replaced comparison check with false
+     */
+    @Test
+    public void testUpdateSpriteBasedOnTargetChecksTrueBranch() {
+        Eagle testEagle = new Eagle(200, 100, new ChickenFarmer(200, 300));
+        
+        testEagle.tick(mockEngine, gameState);
+        
+        // When target.getY() > getY() is true, should set "down" sprite
+        assertEquals("Must check target.getY() > getY() correctly for true branch",
+                     SpriteGallery.eagle.getSprite("down"),
+                     testEagle.getSprite());
+    }
+
+    /**
+     * Tests line 138: trackedTarget.getY() > getY() conditional (false branch)
+     * Mutation: replaced comparison check with true
+     */
+    @Test
+    public void testUpdateSpriteBasedOnTargetChecksFalseBranch() {
+        Eagle testEagle = new Eagle(200, 300, new ChickenFarmer(200, 100));
+        
+        testEagle.tick(mockEngine, gameState);
+        
+        // When target.getY() > getY() is false, should set "up" sprite
+        assertEquals("Must check target.getY() > getY() correctly for false branch",
+                     SpriteGallery.eagle.getSprite("up"),
+                     testEagle.getSprite());
+    }
+
+    /**
+     * Tests line 139: setSprite("down") is called when target below
+     * Mutation: removed call to setSprite
+     */
+    @Test
+    public void testUpdateSpriteBasedOnTargetMustCallSetSpriteDown() {
+        Eagle testEagle = new Eagle(200, 100, new ChickenFarmer(200, 300));
+        
+        testEagle.tick(mockEngine, gameState);
+        
+        // setSprite must be called with "down"
+        assertEquals("setSprite must be called with 'down' when target below",
+                     SpriteGallery.eagle.getSprite("down"),
+                     testEagle.getSprite());
+    }
+
+    /**
+     * Tests line 141: setSprite("up") is called when target above
+     * Mutation: removed call to setSprite
+     */
+    @Test
+    public void testUpdateSpriteBasedOnTargetMustCallSetSpriteUp() {
+        Eagle testEagle = new Eagle(200, 300, new ChickenFarmer(200, 100));
+        
+        testEagle.tick(mockEngine, gameState);
+        
+        // setSprite must be called with "up"
+        assertEquals("setSprite must be called with 'up' when target above",
+                     SpriteGallery.eagle.getSprite("up"),
+                     testEagle.getSprite());
+    }
+
+    /**
+     * Tests line 154: recoverFoodIfKilled conditional check (true branch)
+     * Mutation: replaced comparison check with true
+     */
+    @Test
+    public void testRecoverFoodIfKilledChecksTrueBranch() throws Exception {
+        Eagle testEagle = new Eagle(500, 500, player);
+        gameState.getInventory().addFood(10);
+        
+        // Give eagle food and mark for removal
+        java.lang.reflect.Field foodField = Eagle.class.getDeclaredField("food");
+        foodField.setAccessible(true);
+        foodField.set(testEagle, 5);
+        
+        int initialFood = gameState.getInventory().getFood();
+        testEagle.markForRemoval();
+        testEagle.tick(mockEngine, gameState);
+        
+        // Food should be recovered when all conditions are true
+        assertTrue("Must check all conditions for food recovery",
+                   gameState.getInventory().getFood() > initialFood);
+    }
+
+    /**
+     * Tests line 154: recoverFoodIfKilled conditional check (false branch)
+     * Verifies food is NOT recovered when conditions are false
+     */
+    @Test
+    public void testRecoverFoodIfKilledChecksFalseBranch() throws Exception {
+        Eagle testEagle = new Eagle(500, 500, player);
+        gameState.getInventory().addFood(10);
+        
+        // Eagle NOT marked for removal
+        java.lang.reflect.Field foodField = Eagle.class.getDeclaredField("food");
+        foodField.setAccessible(true);
+        foodField.set(testEagle, 5);
+        
+        int initialFood = gameState.getInventory().getFood();
+        testEagle.tick(mockEngine, gameState);
+        
+        // Food should NOT be recovered when not marked for removal
+        assertEquals("Must check conditions - no recovery when not marked for removal",
+                     initialFood, gameState.getInventory().getFood());
     }
 }

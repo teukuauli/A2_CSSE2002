@@ -13,8 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 import scenarios.mocks.MockEngineState;
 
-import java.lang.reflect.Field;
-
 import static org.junit.Assert.*;
 
 /**
@@ -117,21 +115,31 @@ public class ScarecrowSpawnerTest {
         MockEngineState mockEngine = new MockEngineState();
         BeanWorld world = builder.world.WorldBuilder.empty();
         ChickenFarmer player = new ChickenFarmer(200, 200);
-        TinyInventory inventory = new TinyInventory(5, 10, 10);
+        TinyInventory inventory = new TinyInventory(5, 0, 0); // No coins - won't spawn
         NpcManager npcs = new NpcManager();
         EnemyManager enemies = new EnemyManager(mockEngine.getDimensions());
         JavaBeanGameState gameState = new JavaBeanGameState(world, player, inventory, npcs, enemies);
         
-        // Get timer using reflection
-        Field timerField = ScarecrowSpawner.class.getDeclaredField("timer");
-        timerField.setAccessible(true);
-        engine.timing.RepeatingTimer timer = (engine.timing.RepeatingTimer) timerField.get(spawner);
+        // Timer should not be finished initially (duration is 300)
+        assertFalse("Timer should not be finished before ticking", 
+                    spawner.getTimer().isFinished());
         
-        // Tick should call timer.tick()
+        // Tick once - timer should have ticked but not finished
         spawner.tick(mockEngine, gameState);
+        assertFalse("Timer should have ticked but not finished after 1 tick", 
+                    spawner.getTimer().isFinished());
         
-        // Verify timer was ticked (it should not be null)
-        assertNotNull("tick must call timer.tick()", timer);
+        // Tick 298 more times (299 total) - should still not be finished
+        for (int i = 0; i < 298; i++) {
+            spawner.tick(mockEngine, gameState);
+        }
+        assertFalse("Timer should not be finished after 299 ticks total",
+                    spawner.getTimer().isFinished());
+        
+        // Tick one more time (300th tick) - should be finished
+        spawner.tick(mockEngine, gameState);
+        assertTrue("timer.tick must be called to advance timer to finished state", 
+                   spawner.getTimer().isFinished());
     }
 
     /**

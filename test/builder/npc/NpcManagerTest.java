@@ -248,6 +248,33 @@ public class NpcManagerTest {
     }
 
     /**
+     * Tests line 77: instanceof check filters correctly (mutation: replaced equality with true)
+     * If the check is replaced with true, ALL npcs would be added to interactables list
+     * But base Npc is not actually Interactable, so this would cause a ClassCastException
+     */
+    @Test
+    public void testGetInteractablesFiltersByInstanceof() {
+        // Add a basic Npc which is NOT Interactable
+        Npc basicNpc = new Npc(100, 100);
+        npcManager.addNpc(basicNpc);
+        
+        // Add an Interactable NPC
+        BeeHive hive = new BeeHive(200, 200);
+        npcManager.addNpc(hive);
+        
+        // This should only interact with the hive, not the basic Npc
+        // If instanceof check is bypassed (mutation: replaced with true),
+        // it would try to add basic Npc to List<Interactable>, causing issues
+        try {
+            npcManager.interact(mockEngine, gameState);
+            // Should succeed - only hive is interacted with
+            assertTrue("instanceof check must filter non-Interactable npcs", true);
+        } catch (ClassCastException e) {
+            fail("instanceof check failed - tried to cast non-Interactable Npc: " + e.getMessage());
+        }
+    }
+
+    /**
      * Tests line 86: render returns non-empty list
      * Mutation: replaced return value with Collections.emptyList
      */

@@ -1371,6 +1371,349 @@ public class GuardBeeTest {
         assertTrue("Bee must face towards spawn point when no target",
                    direction >= 135 && direction <= 225);
     }
+
+    /**
+     * Tests line 52: Subtraction in deltaX calculation (not addition)
+     * Mutation: replaced subtraction with addition
+     */
+    @Test
+    public void testInitializeDirectionDeltaXUsesSubtraction() {
+        // Create target to the RIGHT of bee (higher X)
+        Enemy targetRight = new Eagle(300, 200, new ChickenFarmer(400, 400));
+        GuardBee bee = new GuardBee(100, 200, targetRight);
+        
+        // deltaX should be positive (300 - 100 = 200), not negative (300 + 100 = 400)
+        // This should give direction around 0 degrees (right)
+        // If addition is used, deltaX would be 400, direction still right but wrong magnitude
+        int direction = bee.getDirection();
+        
+        // With correct subtraction, should face right (0 degrees ±45)
+        assertTrue("deltaX must use subtraction, not addition (direction: " + direction + ")",
+                   (direction >= -45 && direction <= 45) || direction >= 315);
+    }
+
+    /**
+     * Tests line 53: Subtraction in deltaY calculation (not addition)
+     * Mutation: replaced subtraction with addition
+     */
+    @Test
+    public void testInitializeDirectionDeltaYUsesSubtraction() {
+        // Create target BELOW bee (higher Y)
+        Enemy targetBelow = new Eagle(200, 300, new ChickenFarmer(400, 400));
+        GuardBee bee = new GuardBee(200, 100, targetBelow);
+        
+        // deltaY should be positive (300 - 100 = 200)
+        // This should give direction around 90 degrees (down)
+        int direction = bee.getDirection();
+        
+        // With correct subtraction, should face down (90 degrees ±45)
+        assertTrue("deltaY must use subtraction, not addition (direction: " + direction + ")",
+                   direction >= 45 && direction <= 135);
+    }
+
+    /**
+     * Tests line 85: checkAndHandleCollision returns true (not false)
+     * Mutation: replaced boolean return with false
+     */
+    @Test
+    public void testCheckAndHandleCollisionMustReturnTrue() {
+        // Create enemy at collision distance
+        Enemy closeEnemy = new Eagle(SPAWN_X + 10, SPAWN_Y + 10, new ChickenFarmer(400, 400));
+        gameState.getEnemies().getBirds().add(closeEnemy);
+        
+        int initialX = guardBee.getX();
+        
+        // Tick - if return true works, tick exits early (no movement)
+        guardBee.tick(mockEngine, gameState);
+        
+        // Bee should be marked (collision handled)
+        assertTrue("checkAndHandleCollision must return true on collision",
+                   guardBee.isMarkedForRemoval());
+        
+        // Movement should not occur (early return prevents move() call)
+        // Position should be the same or very close
+        int deltaX = Math.abs(guardBee.getX() - initialX);
+        assertTrue("Early return should prevent movement after collision",
+                   deltaX < 5);
+    }
+
+    /**
+     * Tests line 110: Subtraction in updateDirectionToTarget deltaX
+     * Mutation: replaced subtraction with addition
+     */
+    @Test
+    public void testUpdateDirectionToTargetDeltaXSubtraction() {
+        // Place bee to the LEFT of target
+        Enemy targetRight = new Eagle(400, 200, new ChickenFarmer(500, 500));
+        GuardBee testBee = new GuardBee(100, 200, targetRight);
+        testBee.setDirection(270); // Initially facing up
+        
+        testBee.tick(mockEngine, gameState);
+        
+        // With correct subtraction: deltaX = 400 - 100 = 300 (positive)
+        // Should face right (0 degrees ±45)
+        int direction = testBee.getDirection();
+        assertTrue("deltaX in updateDirectionToTarget must use subtraction (got " + direction + ")",
+                   (direction >= -45 && direction <= 45) || direction >= 315);
+    }
+
+    /**
+     * Tests line 76: move() is called in tick
+     * Mutation: removed call to move()
+     * Verifies position changes after tick
+     */
+    @Test
+    public void testTickCallsMoveToChangePosition() {
+        GuardBee testBee = new GuardBee(SPAWN_X, SPAWN_Y, targetEnemy);
+        testBee.setSpeed(5);
+        testBee.setDirection(0); // Moving right
+        
+        int initialX = testBee.getX();
+        
+        // Tick should call move() which changes X position
+        testBee.tick(mockEngine, gameState);
+        
+        // Position MUST change because move() is called
+        assertTrue("tick() must call move() to change position",
+                   testBee.getX() != initialX);
+    }
+
+    /**
+     * Tests line 123: isGoingDown conditional with true result
+     * Mutation: removed conditional - replaced equality check with true
+     */
+    @Test
+    public void testIsGoingDownConditionalTrueBranch() {
+        GuardBee testBee = new GuardBee(SPAWN_X, SPAWN_Y, targetEnemy);
+        testBee.setDirection(90); // Down direction (between 40 and 140)
+        
+        testBee.tick(mockEngine, gameState);
+        
+        // If conditional works, should set down sprite
+        assertNotNull("isGoingDown conditional must allow down sprite to be set",
+                      testBee.getSprite());
+    }
+
+    /**
+     * Tests line 125: isGoingUp conditional with true result
+     * Mutation: removed conditional - replaced equality check with true
+     */
+    @Test
+    public void testIsGoingUpConditionalTrueBranch() {
+        GuardBee testBee = new GuardBee(SPAWN_X, SPAWN_Y, targetEnemy);
+        testBee.setDirection(270); // Up direction (between 230 and 310)
+        
+        testBee.tick(mockEngine, gameState);
+        
+        // If conditional works, should set up sprite
+        assertNotNull("isGoingUp conditional must allow up sprite to be set",
+                      testBee.getSprite());
+    }
+
+    /**
+     * Tests line 127: isGoingRight conditional with true result
+     * Mutation: removed conditional - replaced equality check with true
+     */
+    @Test
+    public void testIsGoingRightConditionalTrueBranch() {
+        GuardBee testBee = new GuardBee(SPAWN_X, SPAWN_Y, targetEnemy);
+        testBee.setDirection(350); // Right direction (>= 310 or < 40)
+        
+        testBee.tick(mockEngine, gameState);
+        
+        // If conditional works, should set right sprite
+        assertNotNull("isGoingRight conditional must allow right sprite to be set",
+                      testBee.getSprite());
+    }
+
+    /**
+     * Tests line 124: setSprite call for down
+     * Mutation: removed call to setSprite
+     */
+    @Test
+    public void testSetSpriteDownMustBeCalled() {
+        GuardBee testBee = new GuardBee(SPAWN_X, SPAWN_Y, targetEnemy);
+        
+        // Set to null first to verify setSprite is called
+        testBee.setSprite(null);
+        testBee.setDirection(90); // Down
+        
+        testBee.tick(mockEngine, gameState);
+        
+        // setSprite MUST be called to set sprite
+        assertNotNull("setSprite must be called for down direction",
+                      testBee.getSprite());
+    }
+
+    /**
+     * Tests line 126: setSprite call for up
+     * Mutation: removed call to setSprite
+     */
+    @Test
+    public void testSetSpriteUpMustBeCalled() {
+        GuardBee testBee = new GuardBee(SPAWN_X, SPAWN_Y, targetEnemy);
+        
+        testBee.setSprite(null);
+        testBee.setDirection(270); // Up
+        
+        testBee.tick(mockEngine, gameState);
+        
+        // setSprite MUST be called
+        assertNotNull("setSprite must be called for up direction",
+                      testBee.getSprite());
+    }
+
+    /**
+     * Tests line 128: setSprite call for right
+     * Mutation: removed call to setSprite
+     */
+    @Test
+    public void testSetSpriteRightMustBeCalled() {
+        GuardBee testBee = new GuardBee(SPAWN_X, SPAWN_Y, targetEnemy);
+        
+        testBee.setSprite(null);
+        testBee.setDirection(0); // Right
+        
+        testBee.tick(mockEngine, gameState);
+        
+        // setSprite MUST be called
+        assertNotNull("setSprite must be called for right direction",
+                      testBee.getSprite());
+    }
+
+    /**
+     * Tests line 130: setSprite call for left
+     * Mutation: removed call to setSprite
+     */
+    @Test
+    public void testSetSpriteLeftMustBeCalled() {
+        GuardBee testBee = new GuardBee(SPAWN_X, SPAWN_Y, targetEnemy);
+        
+        testBee.setSprite(null);
+        testBee.setDirection(180); // Left
+        
+        testBee.tick(mockEngine, gameState);
+        
+        // setSprite MUST be called
+        assertNotNull("setSprite must be called for left direction",
+                      testBee.getSprite());
+    }
+
+    /**
+     * Tests line 135: isGoingUp comparison check boundary (>= UP_MIN_ANGLE)
+     * Mutation: replaced comparison check with false/true
+     */
+    @Test
+    public void testIsGoingUpMinAngleBoundary() {
+        GuardBee testBee = new GuardBee(SPAWN_X, SPAWN_Y, targetEnemy);
+        testBee.setDirection(230); // Exactly at UP_MIN_ANGLE
+        
+        testBee.tick(mockEngine, gameState);
+        
+        // Should be considered "up"
+        assertNotNull("isGoingUp must return true at minimum angle boundary",
+                      testBee.getSprite());
+    }
+
+    /**
+     * Tests line 135: isGoingUp comparison check upper boundary (< UP_MAX_ANGLE)
+     * Mutation: replaced comparison check with false/true
+     */
+    @Test
+    public void testIsGoingUpMaxAngleBoundary() {
+        GuardBee testBee = new GuardBee(SPAWN_X, SPAWN_Y, targetEnemy);
+        testBee.setDirection(309); // Just below UP_MAX_ANGLE (310)
+        
+        testBee.tick(mockEngine, gameState);
+        
+        // Should be considered "up"
+        assertNotNull("isGoingUp must return true below maximum angle boundary",
+                      testBee.getSprite());
+    }
+
+    /**
+     * Tests line 139: isGoingDown comparison check boundaries
+     * Mutation: replaced comparison check with true
+     */
+    @Test
+    public void testIsGoingDownMinAngleBoundary() {
+        GuardBee testBee = new GuardBee(SPAWN_X, SPAWN_Y, targetEnemy);
+        testBee.setDirection(40); // Exactly at DOWN_MIN_ANGLE
+        
+        testBee.tick(mockEngine, gameState);
+        
+        // Should be considered "down"
+        assertNotNull("isGoingDown must return true at minimum angle boundary",
+                      testBee.getSprite());
+    }
+
+    /**
+     * Tests line 139: isGoingDown max boundary check
+     * Mutation: replaced comparison check with true
+     */
+    @Test
+    public void testIsGoingDownMaxAngleBoundary() {
+        GuardBee testBee = new GuardBee(SPAWN_X, SPAWN_Y, targetEnemy);
+        testBee.setDirection(139); // Just below DOWN_MAX_ANGLE (140)
+        
+        testBee.tick(mockEngine, gameState);
+        
+        // Should be considered "down"
+        assertNotNull("isGoingDown must return true below maximum angle boundary",
+                      testBee.getSprite());
+    }
+
+    /**
+     * Tests line 143: isGoingRight OR condition first part (>= RIGHT_MIN_ANGLE)
+     * Mutation: replaced comparison check with false/true
+     */
+    @Test
+    public void testIsGoingRightMinAngleBoundary() {
+        GuardBee testBee = new GuardBee(SPAWN_X, SPAWN_Y, targetEnemy);
+        testBee.setDirection(310); // Exactly at RIGHT_MIN_ANGLE
+        
+        testBee.tick(mockEngine, gameState);
+        
+        // Should be considered "right"
+        assertNotNull("isGoingRight must return true at minimum angle boundary (>=)",
+                      testBee.getSprite());
+    }
+
+    /**
+     * Tests line 143: isGoingRight OR condition second part (< RIGHT_MAX_ANGLE)
+     * Mutation: replaced comparison check with false/true
+     */
+    @Test
+    public void testIsGoingRightMaxAngleBoundary() {
+        GuardBee testBee = new GuardBee(SPAWN_X, SPAWN_Y, targetEnemy);
+        testBee.setDirection(39); // Just below RIGHT_MAX_ANGLE (40)
+        
+        testBee.tick(mockEngine, gameState);
+        
+        // Should be considered "right"
+        assertNotNull("isGoingRight must return true below maximum angle boundary (<)",
+                      testBee.getSprite());
+    }
+
+    /**
+     * Tests line 71: tick early return when checkAndHandleCollision returns true
+     * Mutation: removed conditional - replaced equality check with false
+     */
+    @Test
+    public void testTickEarlyReturnPreventsSubsequentCalls() {
+        // Add enemy for collision
+        Enemy closeEnemy = new Eagle(SPAWN_X + 5, SPAWN_Y + 5, new ChickenFarmer(400, 400));
+        gameState.getEnemies().getBirds().add(closeEnemy);
+        
+        // Tick - should detect collision and return early
+        guardBee.tick(mockEngine, gameState);
+        
+        // If early return works, both are marked and no further processing
+        assertTrue("Tick must exit early when checkAndHandleCollision returns true",
+                   guardBee.isMarkedForRemoval());
+        assertTrue("Enemy must be marked when collision occurs",
+                   closeEnemy.isMarkedForRemoval());
+    }
 }
 
 

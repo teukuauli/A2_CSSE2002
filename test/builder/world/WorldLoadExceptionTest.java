@@ -183,6 +183,29 @@ public class WorldLoadExceptionTest {
     }
 
     /**
+     * Tests line 58: Mutation detection - replaced equality check with true
+     * If condition is always true, would always use "line X, character Y" format
+     * even when col is -1
+     */
+    @Test
+    public void testGetMessageMutationDetectionLineOnly() {
+        String message = "Test error";
+        int row = 3;
+        // col is -1 (not set)
+        WorldLoadException exception = new WorldLoadException(message, row);
+        
+        String resultMessage = exception.getMessage();
+        
+        // Should be "Test error on line 4" (NOT "Test error on line 4, character X")
+        assertEquals("Must NOT use col when col is -1", 
+                     "Test error on line 4", resultMessage);
+        
+        // Verify it does NOT contain "character" keyword
+        assertFalse("Must check col != -1 before including character info",
+                    resultMessage.contains("character"));
+    }
+
+    /**
      * Tests large row and column values
      */
     @Test
